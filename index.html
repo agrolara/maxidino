@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Baby Dino Jump! - El Juego de Dinosaurio Personalizado</title>
+  <meta name="description" content="Salta cactus en este adictivo y hermoso juego de dinosaurios retro-futuristas usando tu propia cara. ¡Diversión pura en 8-bit!">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Animated Background Matrix Grid -->
+  <div class="bg-grid"></div>
+
+  <div class="app-container">
+    <!-- Header Section -->
+    <header>
+      <h1 class="game-title" id="main-title">Baby Dino Jump</h1>
+      <p class="game-subtitle" id="main-subtitle">Retro-Prehistoric Arcade</p>
+    </header>
+
+    <!-- Top Settings Bar -->
+    <div class="settings-bar">
+      <button class="settings-btn active" id="btn-sound" title="Toggle Sonido" aria-label="Toggle Sonido">
+        🔊
+      </button>
+      <button class="settings-btn" id="btn-music" title="Toggle Música de Fondo" aria-label="Toggle Música">
+        🎵
+      </button>
+    </div>
+
+    <!-- MAIN START DASHBOARD -->
+    <main class="dashboard-grid" id="menu-screen">
+      
+      <!-- CROPPER & PREVIEW PANEL -->
+      <section class="glass-panel crop-section">
+        <div class="card-header neon-blue">
+          <span>Ajusta tu Personaje</span>
+          <span style="font-size: 0.8rem; font-weight: 400; opacity: 0.7;">Paso 1: Recorta la cara</span>
+        </div>
+        <div class="crop-body">
+          <p class="crop-instruction">
+            Arrastra el círculo brillante para posicionarlo sobre la cara del bebé en el asiento azul (derecha) o usa los bordes para redimensionar el círculo de recorte.
+          </p>
+
+          <!-- Interactive Crop Container -->
+          <div class="crop-container" id="crop-box">
+            <img src="media__1780202545083.jpg" class="crop-image-bg" alt="Car backseat photo" id="crop-source-img">
+            <canvas class="crop-canvas-overlay" id="crop-canvas"></canvas>
+          </div>
+
+          <!-- Preview & Start controls -->
+          <div style="display: flex; flex-wrap: wrap; gap: 15px; width: 100%; justify-content: center; align-items: center; margin-top: 5px;">
+            
+            <div class="character-preview-card">
+              <h4>Vista Previa del Dino</h4>
+              <div class="preview-avatar-wrapper">
+                <canvas class="preview-avatar-canvas" id="preview-canvas" width="100" height="100"></canvas>
+              </div>
+            </div>
+
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 220px;">
+              <button class="btn btn-cyan" id="btn-play-game">
+                🚀 ¡Iniciar Juego!
+              </button>
+            </div>
+            
+          </div>
+        </div>
+      </section>
+
+      <!-- SIDEBARS: HIGH SCORES & ACHIEVEMENTS -->
+      <aside style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- High Scores Panel -->
+        <section class="glass-panel sidebar-panel" style="flex: 1;">
+          <div class="card-header neon-pink">
+            <span>🏆 Récords Locales</span>
+          </div>
+          <div class="sidebar-body">
+            <div class="scores-list" id="leaderboard-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Achievements Panel -->
+        <section class="glass-panel sidebar-panel" style="flex: 1;">
+          <div class="card-header neon-purple">
+            <span>⚡ Logros</span>
+          </div>
+          <div class="sidebar-body">
+            <div class="achievements-grid" id="achievements-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </section>
+      </aside>
+
+    </main>
+
+    <!-- GAME VIEWPORT (ACTIVATES ON START) -->
+    <main class="glass-panel game-viewport-card" id="game-screen">
+      <div class="game-hud">
+        <div class="hud-panel">
+          <span class="hud-score-label">Puntaje</span>
+          <span class="hud-score-val" id="hud-score">00000</span>
+          <span class="hud-highscore-val" id="hud-highscore">HI 00000</span>
+        </div>
+        <div class="hud-panel" style="align-items: flex-end;">
+          <div class="hud-env-badge" id="hud-env-name">Selva Prehistórica</div>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 5px;" id="hud-multiplier">x1 Velocidad</span>
+        </div>
+      </div>
+
+      <!-- Main HTML5 Game Canvas -->
+      <canvas class="game-canvas" id="game-canvas" width="800" height="350"></canvas>
+
+      <!-- Game Over Modal Overlay -->
+      <div class="gameover-overlay" id="gameover-screen">
+        <div class="glass-panel gameover-card">
+          <h2 class="gameover-title">¡Fin del Juego!</h2>
+          <p class="gameover-desc" id="gameover-reason">¡Chocaste contra un cactus prehistórico!</p>
+          
+          <div class="gameover-stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">Puntaje Final</div>
+              <div class="stat-val highlight" id="go-score">0</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Máx. Distancia</div>
+              <div class="stat-val" id="go-distance">0m</div>
+            </div>
+          </div>
+
+          <!-- High Score Registration Form -->
+          <div id="leaderboard-register" style="width: 100%; display: none;">
+            <p style="font-size: 0.85rem; color: var(--neon-cyan); margin-bottom: 8px;">🎉 ¡Nuevo récord local! Ingresa tu nombre:</p>
+            <input type="text" id="player-name-input" maxlength="10" placeholder="BEBÉ DINO" value="BEBÉ DINO">
+          </div>
+
+          <div class="btn-container">
+            <button class="btn btn-pink" id="btn-restart">
+              🔄 Reintentar
+            </button>
+            <button class="btn btn-cyan" id="btn-menu" style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass);">
+              🏠 Menú
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Touch Controls -->
+      <div class="mobile-controls">
+        <button class="control-btn" id="ctrl-duck">
+          ⬇️ Agacharse
+        </button>
+        <button class="control-btn" id="ctrl-jump" style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));">
+          🚀 Saltar / Doble Salto
+        </button>
+      </div>
+    </main>
+
+    <!-- Desktop Keyboard hints -->
+    <div class="keyboard-hints" id="kbd-hints">
+      <div class="key-hint">
+        <span class="key-cap">Espacio</span> o <span class="key-cap">⬆</span>
+        <span>Saltar (Presiona dos veces para doble salto)</span>
+      </div>
+      <div class="key-hint">
+        <span class="key-cap">⬇</span>
+        <span>Agacharse (Esquivar voladores)</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
