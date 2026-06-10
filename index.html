@@ -39,12 +39,24 @@
         </div>
         <div class="crop-body">
           <p class="crop-instruction">
-            Arrastra el círculo brillante para posicionarlo sobre la cara del bebé en el asiento azul (derecha) o usa los bordes para redimensionar el círculo de recorte.
+            Arrastra el círculo brillante para posicionarlo sobre la cara o usa los bordes para redimensionarla. ¡Puedes cargar tu propia foto abajo!
           </p>
+
+          <!-- Interactive Crop Options -->
+          <div style="display: flex; gap: 12px; width: 100%; justify-content: center; align-items: center; margin-bottom: 5px; flex-wrap: wrap;">
+            <label for="image-upload" class="btn btn-pink" style="padding: 10px 18px; font-size: 0.9rem; flex: none; width: auto; cursor: pointer; border-radius: 8px;">
+              📸 Cargar Foto Propia
+            </label>
+            <input type="file" id="image-upload" accept="image/*" style="display: none;">
+            
+            <button class="btn" id="btn-reset-image" style="padding: 10px 18px; font-size: 0.9rem; flex: none; width: auto; background: rgba(255,255,255,0.05); border: 1px solid var(--border-glass); border-radius: 8px;">
+              🔄 Foto por Defecto
+            </button>
+          </div>
 
           <!-- Interactive Crop Container -->
           <div class="crop-container" id="crop-box">
-            <img src="media__1780202545083.jpg" class="crop-image-bg" alt="Car backseat photo" id="crop-source-img">
+            <img src="media__1780202545083.jpg" class="crop-image-bg" alt="Crop source" id="crop-source-img">
             <canvas class="crop-canvas-overlay" id="crop-canvas"></canvas>
           </div>
 
@@ -59,7 +71,11 @@
             </div>
 
             <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 220px;">
-              <button class="btn btn-cyan" id="btn-play-game">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <label for="player-name-menu" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; text-align: center;">Nombre del Jugador:</label>
+                <input type="text" id="player-name-menu" maxlength="10" placeholder="BEBÉ DINO" value="BEBÉ DINO">
+              </div>
+              <button class="btn btn-cyan" id="btn-play-game" style="margin-top: 5px;">
                 🚀 ¡Iniciar Juego!
               </button>
             </div>
@@ -74,6 +90,9 @@
         <section class="glass-panel sidebar-panel" style="flex: 1;">
           <div class="card-header neon-pink">
             <span>🏆 Récords Locales</span>
+            <button id="btn-clear-scores" title="Borrar Récords Locales" style="background: transparent; border: none; color: var(--neon-pink); cursor: pointer; font-size: 1.1rem; opacity: 0.6; transition: all 0.2s; padding: 2px 8px; border-radius: 4px;">
+              🗑️
+            </button>
           </div>
           <div class="sidebar-body">
             <div class="scores-list" id="leaderboard-container">

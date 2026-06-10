@@ -801,3 +801,35 @@ h1.game-title {
     display: none;
   }
 }
+
+/* Player Name Input Menu */
+#player-name-menu {
+  width: 100%;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  text-align: center;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+#player-name-menu:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
+}
+
+/* Clear scores button */
+#btn-clear-scores:hover {
+  opacity: 1 !important;
+  transform: scale(1.15);
+  background: rgba(255, 0, 127, 0.1) !important;
+}
+
+#btn-clear-scores:active {
+  transform: scale(0.95);
+}
+

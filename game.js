@@ -129,6 +129,13 @@ window.addEventListener('load', () => {
   // Load High Scores & Achievements from localStorage
   loadLeaderboard();
   loadAchievements();
+
+  // Load saved player name if any
+  const savedPlayerName = localStorage.getItem('dino_player_name');
+  if (savedPlayerName) {
+    document.getElementById('player-name-menu').value = savedPlayerName;
+    document.getElementById('player-name-input').value = savedPlayerName;
+  }
   
   // Set up settings toggle event listeners
   document.getElementById('btn-sound').addEventListener('click', toggleSound);
@@ -140,6 +147,33 @@ window.addEventListener('load', () => {
   // Game Over Controls
   document.getElementById('btn-restart').addEventListener('click', restartGame);
   document.getElementById('btn-menu').addEventListener('click', showMenu);
+
+  // Clear Leaderboard Button
+  document.getElementById('btn-clear-scores').addEventListener('click', () => {
+    if (confirm("¿Estás seguro de que deseas borrar todos los récords locales?")) {
+      GAME_STATE.highScores = [];
+      saveLeaderboard();
+      renderLeaderboard();
+      playAudioTone(150, 'sawtooth', 0.3, 0.15); // buzzer chime
+    }
+  });
+
+  // Custom Image Upload Handler
+  document.getElementById('image-upload').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        cropImg.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Reset Default Image Handler
+  document.getElementById('btn-reset-image').addEventListener('click', () => {
+    cropImg.src = 'media__1780202545083.jpg';
+  });
   
   // Setup Mobile Controls
   setupMobileControls();
@@ -149,10 +183,23 @@ window.addEventListener('load', () => {
   window.addEventListener('keyup', handleKeyUp);
 
   // Initialize Cropper when Image loads (or immediately if already cached)
-  if (cropImg.complete) {
+  cropImg.addEventListener('load', () => {
+    if (cropImg.src.indexOf('data:') === 0) {
+      // Custom uploaded image - center and expand crop circle
+      GAME_STATE.crop.x = 512;
+      GAME_STATE.crop.y = 247;
+      GAME_STATE.crop.r = 60;
+    } else {
+      // Default backseat photo - focus on the baby's face
+      GAME_STATE.crop.x = 540;
+      GAME_STATE.crop.y = 320;
+      GAME_STATE.crop.r = 45;
+    }
     initCropEditor();
-  } else {
-    cropImg.addEventListener('load', initCropEditor);
+  });
+  
+  if (cropImg.complete) {
+    cropImg.dispatchEvent(new Event('load'));
   }
   
   // Fallback in case the image fails to load properly
@@ -1057,6 +1104,11 @@ class Obstacle {
 function startGame() {
   initAudio();
   
+  // Sync name from menu input and save
+  const menuName = document.getElementById('player-name-menu').value.trim().toUpperCase() || "BEBÉ DINO";
+  document.getElementById('player-name-input').value = menuName;
+  localStorage.setItem('dino_player_name', menuName);
+
   // Transition Menu UI to Game UI
   document.getElementById('menu-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'flex';
@@ -1765,6 +1817,10 @@ function submitHighScore() {
   const input = document.getElementById('player-name-input');
   let name = input.value.trim().toUpperCase();
   if (!name) name = "BEBÉ DINO";
+  
+  // Sync back to menu name input and save
+  document.getElementById('player-name-menu').value = name;
+  localStorage.setItem('dino_player_name', name);
   
   const newScore = {
     name: name,
