@@ -26,10 +26,15 @@
     </header>
 
     <!-- Top Settings Bar -->
-    <div class="settings-bar" style="justify-content: space-between; align-items: center; width: 100%;">
-      <button id="btn-install-pwa" style="display: none; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); border: none; color: #fff; padding: 10px 20px; border-radius: 8px; font-family: var(--font-title); font-weight: 800; font-size: 0.85rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 0 12px rgba(0, 240, 255, 0.4); transition: all 0.2s;">
-        📲 Instalar App
-      </button>
+    <div class="settings-bar" style="justify-content: space-between; align-items: center; width: 100%; gap: 10px;">
+      <div style="display: flex; gap: 10px; align-items: center; flex: 1;">
+        <button id="btn-install-pwa" style="display: none; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); border: none; color: #fff; padding: 10px 20px; border-radius: 8px; font-family: var(--font-title); font-weight: 800; font-size: 0.85rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 0 12px rgba(0, 240, 255, 0.4); transition: all 0.2s; white-space: nowrap;">
+          📲 Instalar App
+        </button>
+        <div id="ios-install-tip" style="display: none; background: rgba(20, 16, 35, 0.8); backdrop-filter: blur(8px); border: 1px solid rgba(0, 240, 255, 0.25); padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; color: #fff; max-width: 280px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100; animation: title-glow 3s ease-in-out infinite alternate;">
+          📲 <strong>Instalar:</strong> toca compartir <span style="font-size: 0.85rem;">📤</span> y luego <strong>"Añadir a pantalla de inicio"</strong>.
+        </div>
+      </div>
       <div style="display: flex; gap: 10px;">
         <button class="settings-btn active" id="btn-sound" title="Toggle Sonido" aria-label="Toggle Sonido">
           🔊
@@ -181,12 +186,8 @@
 
       <!-- Mobile Touch Controls -->
       <div class="mobile-controls">
-        <button class="control-btn" id="ctrl-duck">
-          ⬇️ Agacharse
-        </button>
-        <button class="control-btn" id="ctrl-jump" style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));">
-          🚀 Saltar / Doble Salto
-        </button>
+        <button class="control-btn" id="ctrl-duck" aria-label="Agacharse">⬇️</button>
+        <button class="control-btn" id="ctrl-jump" style="background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));" aria-label="Saltar">🚀</button>
       </div>
     </main>
 

@@ -113,6 +113,57 @@ let audioCtx = null;
 let musicNode = null;
 let musicInterval = null;
 
+// --- IMAGE PERSISTENCE HELPERS ---
+
+// Compresses and saves the custom uploaded image to localStorage
+function saveCustomImage(base64Str) {
+  const img = new Image();
+  img.onload = () => {
+    const maxDim = 800;
+    let width = img.width;
+    let height = img.height;
+    
+    // Scale down if exceeding maxDim to prevent QuotaExceededError in localStorage
+    if (width > maxDim || height > maxDim) {
+      if (width > height) {
+        height = Math.round((height * maxDim) / width);
+        width = maxDim;
+      } else {
+        width = Math.round((width * maxDim) / height);
+        height = maxDim;
+      }
+    }
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw onto canvas
+    ctx.drawImage(img, 0, 0, width, height);
+    
+    try {
+      // Export as compressed JPEG base64 (75% quality is very light)
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+      localStorage.setItem('dino_custom_image', compressedDataUrl);
+      console.log('Imagen de dino guardada y comprimida exitosamente.');
+    } catch (e) {
+      console.error('Error al guardar la imagen en localStorage:', e);
+    }
+  };
+  img.src = base64Str;
+}
+
+// Saves crop settings (x, y, r) to localStorage
+function saveCropSettings() {
+  const cropData = {
+    x: GAME_STATE.crop.x,
+    y: GAME_STATE.crop.y,
+    r: GAME_STATE.crop.r
+  };
+  localStorage.setItem('dino_crop_settings', JSON.stringify(cropData));
+}
+
 // --- INITIALIZATION ---
 window.addEventListener('load', () => {
   // Load DOM Elements
@@ -164,7 +215,11 @@ window.addEventListener('load', () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        cropImg.src = event.target.result;
+        const rawData = event.target.result;
+        cropImg.src = rawData;
+        
+        // Compress and save image
+        saveCustomImage(rawData);
       };
       reader.readAsDataURL(file);
     }
@@ -173,6 +228,13 @@ window.addEventListener('load', () => {
   // Reset Default Image Handler
   document.getElementById('btn-reset-image').addEventListener('click', () => {
     cropImg.src = 'media__1780202545083.jpg';
+    localStorage.removeItem('dino_custom_image');
+    localStorage.removeItem('dino_crop_settings');
+    // Set to default coordinates
+    GAME_STATE.crop.x = 540;
+    GAME_STATE.crop.y = 320;
+    GAME_STATE.crop.r = 45;
+    initCropEditor();
   });
   
   // Setup Mobile Controls
@@ -182,18 +244,49 @@ window.addEventListener('load', () => {
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
 
+  // Touch listener on gameCanvas for mobile tap-to-jump
+  gameCanvas.addEventListener('touchstart', (e) => {
+    if (GAME_STATE.currentScreen === 'game' && !GAME_STATE.isGameOver) {
+      playerJump();
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Load saved custom image and crop settings from localStorage
+  const savedCustomImage = localStorage.getItem('dino_custom_image');
+  const savedCropSettings = localStorage.getItem('dino_crop_settings');
+  
+  if (savedCustomImage) {
+    cropImg.src = savedCustomImage;
+  }
+  
+  if (savedCropSettings) {
+    try {
+      const cropData = JSON.parse(savedCropSettings);
+      GAME_STATE.crop.x = cropData.x;
+      GAME_STATE.crop.y = cropData.y;
+      GAME_STATE.crop.r = cropData.r;
+    } catch(e) {
+      console.error("Error al cargar configuración de recorte:", e);
+    }
+  }
+
   // Initialize Cropper when Image loads (or immediately if already cached)
   cropImg.addEventListener('load', () => {
     if (cropImg.src.indexOf('data:') === 0) {
-      // Custom uploaded image - center and expand crop circle
-      GAME_STATE.crop.x = 512;
-      GAME_STATE.crop.y = 247;
-      GAME_STATE.crop.r = 60;
+      // Custom uploaded image - center and expand crop circle ONLY if not loaded from settings
+      if (!savedCropSettings) {
+        GAME_STATE.crop.x = 512;
+        GAME_STATE.crop.y = 247;
+        GAME_STATE.crop.r = 60;
+      }
     } else {
-      // Default backseat photo - focus on the baby's face
-      GAME_STATE.crop.x = 540;
-      GAME_STATE.crop.y = 320;
-      GAME_STATE.crop.r = 45;
+      // Default backseat photo - focus on the baby's face ONLY if not loaded from settings
+      if (!savedCropSettings) {
+        GAME_STATE.crop.x = 540;
+        GAME_STATE.crop.y = 320;
+        GAME_STATE.crop.r = 45;
+      }
     }
     initCropEditor();
   });
@@ -207,6 +300,14 @@ window.addEventListener('load', () => {
     console.error("No se pudo cargar la imagen del bebé. Usando marcador de posición.");
     initCropEditor();
   });
+
+  // Detect iOS and display install tip if running in browser
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+  if (isIOS && !isStandalone) {
+    const iosTip = document.getElementById('ios-install-tip');
+    if (iosTip) iosTip.style.display = 'block';
+  }
 });
 
 // --- AUDIO PROCEDURAL SYNTHESIZER ---
@@ -359,8 +460,8 @@ function initCropEditor() {
   window.addEventListener('mouseup', handleCropMouseUp);
   
   cropCanvas.addEventListener('touchstart', handleCropTouchStart, { passive: false });
-  window.addEventListener('touchmove', handleCropTouchMove, { passive: false });
-  window.addEventListener('touchend', handleCropTouchEnd);
+  cropCanvas.addEventListener('touchmove', handleCropTouchMove, { passive: false });
+  cropCanvas.addEventListener('touchend', handleCropTouchEnd);
 
   // Redraw initially
   drawCropEditor();
@@ -443,9 +544,9 @@ function drawCropEditor() {
   handles.forEach(h => {
     cropCtx.fillStyle = '#ffffff';
     cropCtx.strokeStyle = '#ff007f';
-    cropCtx.lineWidth = 2;
+    cropCtx.lineWidth = 2.5;
     cropCtx.beginPath();
-    cropCtx.arc(h.x, h.y, 6, 0, Math.PI * 2);
+    cropCtx.arc(h.x, h.y, 8, 0, Math.PI * 2);
     cropCtx.fill();
     cropCtx.stroke();
   });
@@ -555,11 +656,11 @@ function handleCropMouseDown(e) {
   const currentCanvasRadius = GAME_STATE.crop.r * (cropCanvas.width / 1024);
   const canvasCenter = getCanvasCoords(GAME_STATE.crop.x, GAME_STATE.crop.y);
   
-  // 1. Check if clicked a resize handle
+  // 1. Check if clicked a resize handle (increased hit detection radius to 22px for mobile touch)
   const handles = getHandles(canvasCenter.x, canvasCenter.y, currentCanvasRadius);
   for (let i = 0; i < handles.length; i++) {
     const dist = Math.hypot(mouseX - handles[i].x, mouseY - handles[i].y);
-    if (dist <= 10) {
+    if (dist <= 22) {
       GAME_STATE.crop.resizing = true;
       GAME_STATE.crop.handleIndex = i;
       GAME_STATE.crop.cropStart = { ...GAME_STATE.crop };
@@ -590,7 +691,7 @@ function handleCropMouseMove(e) {
     let isHoveringHandle = false;
     const handles = getHandles(canvasCenter.x, canvasCenter.y, currentCanvasRadius);
     for (let i = 0; i < handles.length; i++) {
-      if (Math.hypot(mouseX - handles[i].x, mouseY - handles[i].y) <= 10) {
+      if (Math.hypot(mouseX - handles[i].x, mouseY - handles[i].y) <= 22) {
         cropCanvas.style.cursor = handles[i].cursor;
         isHoveringHandle = true;
         break;
@@ -646,6 +747,7 @@ function handleCropMouseMove(e) {
 function handleCropMouseUp() {
   GAME_STATE.crop.dragging = false;
   GAME_STATE.crop.resizing = false;
+  saveCropSettings();
 }
 
 // Touch controls mappings for mobile phones (Cropper Support)
@@ -658,8 +760,10 @@ function handleCropTouchStart(e) {
     });
     cropCanvas.dispatchEvent(mouseEvent);
     
-    // Prevent scrolling screen when dragging crop overlay on mobile
-    e.preventDefault();
+    // Only block page scrolling if we're actually dragging or resizing the circle
+    if (GAME_STATE.crop.dragging || GAME_STATE.crop.resizing) {
+      e.preventDefault();
+    }
   }
 }
 
@@ -671,13 +775,18 @@ function handleCropTouchMove(e) {
       clientY: t.clientY
     });
     window.dispatchEvent(mouseEvent);
-    e.preventDefault();
+    
+    // Only block page scrolling if we're actually dragging or resizing the circle
+    if (GAME_STATE.crop.dragging || GAME_STATE.crop.resizing) {
+      e.preventDefault();
+    }
   }
 }
 
 function handleCropTouchEnd(e) {
   const mouseEvent = new MouseEvent('mouseup', {});
   window.dispatchEvent(mouseEvent);
+  saveCropSettings();
 }
 
 // --- PARALLAX BACKGROUND PROCEDURAL RENDERERS ---

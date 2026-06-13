@@ -795,7 +795,41 @@ h1.game-title {
 /* Detect Touch Devices to reveal mobile controls */
 @media (hover: none) and (pointer: coarse) {
   .mobile-controls {
+    display: flex !important;
+    position: absolute;
+    bottom: 12px;
+    left: 0;
+    width: 100%;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 15px;
+    justify-content: space-between;
+    pointer-events: none; /* Allow clicks on canvas if not touching buttons */
+    z-index: 15;
+  }
+  .control-btn {
+    pointer-events: auto; /* Clickable */
+    flex: none;
+    width: 65px;
+    height: 65px;
+    border-radius: 50% !important;
+    opacity: 0.65;
+    background: rgba(20, 16, 35, 0.8) !important;
+    border: 2px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    font-size: 1.5rem !important;
     display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 !important;
+    margin: 0;
+    transition: all 0.2s ease;
+  }
+  .control-btn:active {
+    opacity: 0.95;
+    transform: scale(0.9) !important;
+    border-color: var(--neon-cyan) !important;
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
   }
   .keyboard-hints {
     display: none;
@@ -900,6 +934,7 @@ h1.game-title {
   .app-container {
     padding: 5px;
     gap: 10px;
+    max-width: calc((100vh - 70px) * 16 / 7); /* Keep canvas within screen bounds */
   }
   header {
     display: none; /* Hide header in landscape to maximize canvas height */
@@ -909,7 +944,7 @@ h1.game-title {
     gap: 10px;
   }
   .sidebar-panel {
-    max-height: 250px;
+    max-height: 220px;
   }
 }
 
