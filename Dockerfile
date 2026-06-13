@@ -1,7 +1,5 @@
 FROM nginx:alpine
-COPY index.html /usr/share/nginx/html/index.html
-COPY styles.css /usr/share/nginx/html/styles.css
-COPY game.js /usr/share/nginx/html/game.js
-COPY media__1780202545083.jpg /usr/share/nginx/html/media__1780202545083.jpg
+COPY . /usr/share/nginx/html/
+RUN rm -rf /usr/share/nginx/html/.git /usr/share/nginx/html/task.md /usr/share/nginx/html/walkthrough.md /usr/share/nginx/html/implementation_plan.md
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
