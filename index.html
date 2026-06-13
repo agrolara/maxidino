@@ -6,6 +6,13 @@
   <title>Baby Dino Jump! - El Juego de Dinosaurio Personalizado</title>
   <meta name="description" content="Salta cactus en este adictivo y hermoso juego de dinosaurios retro-futuristas usando tu propia cara. ¡Diversión pura en 8-bit!">
   <link rel="stylesheet" href="styles.css">
+  
+  <!-- PWA & Mobile Optimization Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#090810">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
   <!-- Animated Background Matrix Grid -->
@@ -19,13 +26,18 @@
     </header>
 
     <!-- Top Settings Bar -->
-    <div class="settings-bar">
-      <button class="settings-btn active" id="btn-sound" title="Toggle Sonido" aria-label="Toggle Sonido">
-        🔊
+    <div class="settings-bar" style="justify-content: space-between; align-items: center; width: 100%;">
+      <button id="btn-install-pwa" style="display: none; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); border: none; color: #fff; padding: 10px 20px; border-radius: 8px; font-family: var(--font-title); font-weight: 800; font-size: 0.85rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 0 12px rgba(0, 240, 255, 0.4); transition: all 0.2s;">
+        📲 Instalar App
       </button>
-      <button class="settings-btn" id="btn-music" title="Toggle Música de Fondo" aria-label="Toggle Música">
-        🎵
-      </button>
+      <div style="display: flex; gap: 10px;">
+        <button class="settings-btn active" id="btn-sound" title="Toggle Sonido" aria-label="Toggle Sonido">
+          🔊
+        </button>
+        <button class="settings-btn" id="btn-music" title="Toggle Música de Fondo" aria-label="Toggle Música">
+          🎵
+        </button>
+      </div>
     </div>
 
     <!-- MAIN START DASHBOARD -->
@@ -192,5 +204,53 @@
   </div>
 
   <script src="game.js"></script>
+  <script>
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('Service Worker registered successfully.', reg.scope))
+          .catch((err) => console.error('Service Worker registration failed.', err));
+      });
+    }
+
+    // PWA Install Prompt Logic
+    let deferredPrompt;
+    const installBtn = document.getElementById('btn-install-pwa');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent automatic prompt from showing
+      e.preventDefault();
+      // Store event
+      deferredPrompt = e;
+      // Show the install button
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', () => {
+      if (deferredPrompt) {
+        // Hide UI button
+        installBtn.style.display = 'none';
+        // Show prompt
+        deferredPrompt.prompt();
+        // Wait for response
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the PWA install prompt');
+          } else {
+            console.log('User dismissed the PWA install prompt');
+            // Re-show the button if they dismissed
+            installBtn.style.display = 'block';
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
+
+    window.addEventListener('appinstalled', (evt) => {
+      console.log('Baby Dino Jump PWA installed successfully.');
+      installBtn.style.display = 'none';
+    });
+  </script>
 </body>
 </html>

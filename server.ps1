@@ -13,6 +13,8 @@ function Get-MimeType {
         ".html" { return "text/html; charset=utf-8" }
         ".css"  { return "text/css; charset=utf-8" }
         ".js"   { return "application/javascript; charset=utf-8" }
+        ".json" { return "application/json; charset=utf-8" }
+        ".webmanifest" { return "application/manifest+json; charset=utf-8" }
         ".jpg"  { return "image/jpeg" }
         ".jpeg" { return "image/jpeg" }
         ".png"  { return "image/png" }
